@@ -569,7 +569,7 @@ deltak <- function(x){
 ############ this part is for parallel computing for consensus ###########################
 
 #' @import foreach
-#' @import doMC
+#' @import doParallel
 #' @import iterators
 #' @export
 
@@ -714,7 +714,7 @@ cytosee_consboost <- function(object,pannal.use=NULL,cell.use=NULL,maxK=10,K=5,K
 #    cons_data <- ConsensusClusterPlus::ConsensusClusterPlus(t(object),maxK = K)
 #    return(cons_data[[K]]$consensusClass)
     cons_data <- mcconsensus(as.data.frame(object),diss=FALSE,algorithms=list('kmeans'),alparams=list(),clmin=K-1,clmax=K+1,prop=0.8,reps=50,numofcores=3)
-    return(cons_data[[2]]@rm)
+    return(cons_data[[2]]@rm$cm)
 
    }
   else{
@@ -772,17 +772,19 @@ cons_sampling <- function(object,K_cell=K_cell,K=K){
   ada.pred.test   <- predict(AdaModels, testset,  type='probs')
   Ada.pred.train <- data.frame(lapply(ada.pred.train, function(x) x[,2])) #Make a data.frame of probs
   ADA.pred.train <- classify(Ada.pred.train)
-  ConMat_Train<-confusionMatrix(ADA.pred.train$Class, trainClass)
-  Train_Accuracy<-as.vector(ConMat_Train$ overall)[1];
-  Train_err<-1-Train_Accuracy;
+#  ConMat_Train<-confusionMatrix(ADA.pred.train$Class, trainClass)
+#  Train_Accuracy<-as.vector(ConMat_Train$ overall)[1];
+#  Train_err<-1-Train_Accuracy;
+  Train_ari <- adjustedRandIndex(ADA.pred.train$Class,trainClass)
   Ada.pred.test <- data.frame(lapply(ada.pred.test, function(x) x[,2])) #Make a data.frame of probs
   ADA.pred.test <- classify(Ada.pred.test)
-  ConMat_Test<-confusionMatrix(ADA.pred.test$Class, testClass)
-  Test_Accuracy<-as.vector(ConMat_Test$ overall)[1];
-  Test_err<-1-Test_Accuracy;
-  print(paste0("The test accuracy is :",Test_Accuracy))
+#  ConMat_Test<-confusionMatrix(ADA.pred.test$Class, testClass)
+#  Test_Accuracy<-as.vector(ConMat_Test$ overall)[1];
+#  Test_err<-1-Test_Accuracy;
+  Test_ari <- adjustedRandIndex(ADA.pred.test$Class,testClass)
+  print(paste0("The test accuracy is :",Test_ari))
   results_rt <- list()
   results_rt[["AdaModels"]]<-AdaModels
-  results_rt[["Test_Accuracy"]]<-Test_Accuracy
+  results_rt[["Test_Accuracy"]]<-Test_ari
   return(results_rt)
 }
