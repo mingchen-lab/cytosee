@@ -603,7 +603,7 @@ mcconsensus <- function(x,diss=FALSE,algorithms=list('agnes'),alparams=list(),cl
   #list to hold all of the consmatrix objects
   cmlist <- list();
 
-  doMC::registerDoMC(cores=numofcores)
+  doParallel::registerDoParallel(cores=numofcores)
   #cmlistret <- apply_function(clmin:clmax, clst=cmlist);
   result <- foreach::foreach(iter=clmin:clmax) %dopar% {
     clst <- list()
