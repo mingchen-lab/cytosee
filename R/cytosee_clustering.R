@@ -9,26 +9,6 @@
 
 
 
-
-
-##### flowSOM #####
-
-#' @import FlowSOM
-#' @export
-
-
-cytosee_flowSOM=function(File,K,colsToUse){
-  ff <- File
-  fSOM <- ReadInput(ff,compensate = FALSE,transform = FALSE, scale = TRUE)
-  fSOM <- BuildSOM(fSOM,colsToUse = colsToUse)
-  metaClustering <- metaClustering_consensus(data=fSOM$map$codes,k=K)
-  result=matrix()
-  for(i in 1:length(fSOM$map$mapping[,1])){
-    result[i]=metaClustering[fSOM$map$mapping[i,1]]
-  }
-  return(result)
-}
-
 ##---------------------------------------------------------------------------------------------------
 # Function for calculate the center of clusters
 # pro_center_calc for building the mst
@@ -236,16 +216,6 @@ adjustedRandIndex <- function (x, y)
 
 
 
-# Rclustpp densitycut flowSOM flowmeans rphenograph
-
-#' @export
-cytosee_Rclusterpp <- function(object, K=8, n_cores = 1){
-  Rclusterpp::Rclusterpp.setThreads(threads = n_cores)
-  clust <- Rclusterpp::Rclusterpp.hclust(object)
-  cluster_id <- cutree(clust,K)
-  return(cluster_id)
-}
-
 
 #' @importFrom flowMeans flowMeans
 #' @export
@@ -256,7 +226,7 @@ cytosee_flowMeans <- function(object, NumC=8, MaxN = MaxN ){
 }
 
 #' @import Rphenograph
-#' @import igraph
+#' @importFrom igraph membership
 #' @export
 cytosee_phenograph <- function(object, K = 30){
   clust <- cytofkit::Rphenograph(object,k = K)
@@ -269,8 +239,6 @@ cytosee_densitycut <- function(object, NumC= 30){
   clust <- DensityCut(object,show.plot = F,K=NumC)$cluster
   return(clust)
 }
-
-##### flowSOM #####
 
 #' @import FlowSOM
 #' @export
@@ -285,3 +253,17 @@ cytosee_flowSOM=function(File,K,colsToUse){
   }
   return(result)
 }
+
+#' @import SamSPECTRAL
+#' @export
+cytosee_SamSPECTRAL=function(data,colsToUse,sigma,separation.factor){
+  data=as.matrix(data)
+  result=SamSPECTRAL::SamSPECTRAL(data.points=data,
+                                  dimensions = colsToUse,
+                                  normal.sigma = sigma,
+                                  separation.factor=separation.factor)
+  return(result)
+}
+
+
+

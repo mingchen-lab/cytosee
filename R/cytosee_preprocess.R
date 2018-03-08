@@ -15,6 +15,7 @@
 #' iflowobj <- initiflow(fcs.data = fcsname)
 #' iflowobj
 #'
+#'
 initiflow <- function(
   fcs.data,
   projectname = "cytoseeProject"
@@ -34,13 +35,13 @@ initiflow <- function(
 #' @importFrom flowCore exprs
 #' @export
 para_setting <- function(object,cores=1, channel.use = 0, transform_method ="log10"){
-    object@cores <- cores
-    object@transform_method<-transform_method
-    if(channel.use == 0){
-      channel.use <- 1:length(object@fcs.data@exprs[1,])
-    }
-    object@channel.use <- channel.use
-    return(object)
+  object@cores <- cores
+  object@transform_method<-transform_method
+  if(channel.use == 0){
+    channel.use <- 1:length(object@fcs.data@exprs[1,])
+  }
+  object@channel.use <- channel.use
+  return(object)
 
 }
 
@@ -120,6 +121,9 @@ flow_rate_bin <- function(x, second_fraction = 0.1, timeCh = "Time", timestep = 
 
 flow_rate_plot <- function(flowRateData, lowerRateThres, upperRateThres,
                            lowerTimeCut, UpperTimeCut) {
+  if(is.null(lowerRateThres)){
+    return()
+  }
 
   frequencies <- as.data.frame(flowRateData$frequencies)
   second_fraction <- flowRateData$info$second_fraction
@@ -204,7 +208,9 @@ flow_signal_bin <- function(x, channels = NULL, binSize=500, timeCh="Time",
 
 
 flow_signal_plot <- function(flowSignalData, lowerBinThres, upperBinThres) {
-
+  if(is.null(flowSignalData)){
+    return()
+  }
   exprsBin <- flowSignalData$exprsBin
   binID <- 1:nrow(exprsBin)
   teCh <- grep("Time|time|Event|event", colnames(exprsBin), value = T)

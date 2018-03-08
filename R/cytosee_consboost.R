@@ -702,89 +702,40 @@ mcconsensus <- function(x,diss=FALSE,algorithms=list('agnes'),alparams=list(),cl
 
 #' Consboost function which using consensus clustering method
 #' @param object the FCS exprs data set after transformed
-#' @param K_cell The number of sampling data
-#' @param K Number of clusters
-#' @param reptime loop times for getting the best sample set
-#' @import ConsensusClusterPlus
+#' @param K Number of final clusters
+#' @param sample_n The number of sampling data
+#' @param n_core CPU thread use
 #' @import ada
 #' @export
-cytosee_consboost <- function(object,pannal.use=NULL,cell.use=NULL,maxK=10,K=5,K_cell=2000,reptime=5){
-  colnames(object)<-paste0("marker",1:ncol(object))
-  if(length(object[,1])<K_cell){
-#    cons_data <- ConsensusClusterPlus::ConsensusClusterPlus(t(object),maxK = K)
-#    return(cons_data[[K]]$consensusClass)
-    cons_data <- mcconsensus(as.data.frame(object),diss=FALSE,algorithms=list('kmeans'),alparams=list(),clmin=K-1,clmax=K+1,prop=0.8,reps=50,numofcores=3)
-    return(cons_data[[2]]@rm$cm)
 
-   }
+cytosee_consboost <- function(object,K,sample_n = 3000,n_core=3){
+  set.seed(443)
+  colnames(object)<-paste0("marker",1:ncol(object))
+  total_len = length(object[,1])
+  if(total_len<=sample_n){
+    trainset <-object[1:total_len,]
+  }
+
   else{
-    AdaModels <- list()
-    AdaModels[["Test_Accuracy"]]<-0
-    for(i in 0:reptime){
-      message(paste0("Staring time ",i+1," calculation"))
-      model_rt <- cons_sampling(object,K_cell = K_cell ,K=K)
-      if(model_rt$Test_Accuracy > 0.8){
-        AdaModels <- model_rt
-        break
-      }
-      else{
-        if(model_rt$Test_Accuracy > AdaModels$Test_Accuracy){
-          AdaModels <- model_rt
-        }
-      }
+    mm <- kmeans(object,100,iter.max=1000000)
+    label <- mm$cluster
+    av_num = sample_n / total_len
+    label_level = levels(as.factor(label))
+    return_list=vector()
+    for(i in label_level){
+      ll = which(label==i)
+      return_list = c(return_list,sample(ll,round(length(ll)*av_num)))
     }
-    AdaModels <- AdaModels$AdaModels
+    trainset <- object[base::sort(return_list),]
+    message("calculating trainset")
+    cons_data <- mcconsensus(as.data.frame(trainset),diss=FALSE,algorithms=list('hclust'),alparams=list(),clmin=K-1,clmax=K+1,prop=0.8,reps=100,numofcores=n_core)
+    trainClass <- as.vector(paste0("X",cons_data[[2]]@rm$cm))
+    message("Adaboost model")
+    AdaModels <- oneVsAll(trainset, trainClass, ada)
     ada.pred.unknown   <- predict(AdaModels, as.data.frame(object),  type='probs')
-    Ada.pred.unknown   <- data.frame(lapply(ada.pred.unknown, function(x) x[,2])) #Make a data.frame of probs
+    Ada.pred.unknown   <- data.frame(lapply(ada.pred.unknown, function(x) x[,2]))
     ADA.pred.unknown   <- classify(Ada.pred.unknown)
     ada.class <- as.integer(gsub("X","",ADA.pred.unknown$Class))
     return(ada.class)
   }
-}
-
-
-
-
-#' sampling data from full dataset to save computation resource
-#' @param object the FCS exprs data set after transformed
-#' @param K_cell The number of sampling data
-#' @param K Number of clusters
-#' @import ada
-#' @import caret
-
-cons_sampling <- function(object,K_cell=K_cell,K=K){
-  trainset <- object[downsamleRD(object,K_cell = K_cell),]
-  testset <- object[downsamleRD(object,K_cell = K_cell),]
-  # cons_data1 <- consensus(pro_calc_distance(transet),nk=nk)
-  # cons_data2 <- consensus(pro_calc_distance(transet),nk=nk)
-  message("calculating trainset")
-  cons_data1 <- mcconsensus(as.data.frame(trainset),diss=FALSE,algorithms=list('kmeans'),alparams=list(),clmin=K-1,clmax=K+1,prop=0.8,reps=50,numofcores=3)
-  trainClass <- as.vector(paste0("X",cons_data1[[2]]@rm$cm))
-  message("calculating testset")
-  cons_data2 <- mcconsensus(as.data.frame(trainset),diss=FALSE,algorithms=list('kmeans'),alparams=list(),clmin=K-1,clmax=K+1,prop=0.8,reps=50,numofcores=3)
-  testClass <- as.vector(paste0("X",cons_data2[[2]]@rm$cm))
-  message("calculate model accuracy")
-  trainset <- as.data.frame(trainset)
-  testset <- as.data.frame(testset)
-
-  AdaModels <- oneVsAll(trainset, trainClass, ada)
-  ada.pred.train  <- predict(AdaModels, trainset, type='probs')
-  ada.pred.test   <- predict(AdaModels, testset,  type='probs')
-  Ada.pred.train <- data.frame(lapply(ada.pred.train, function(x) x[,2])) #Make a data.frame of probs
-  ADA.pred.train <- classify(Ada.pred.train)
-#  ConMat_Train<-confusionMatrix(ADA.pred.train$Class, trainClass)
-#  Train_Accuracy<-as.vector(ConMat_Train$ overall)[1];
-#  Train_err<-1-Train_Accuracy;
-  Train_ari <- adjustedRandIndex(ADA.pred.train$Class,trainClass)
-  Ada.pred.test <- data.frame(lapply(ada.pred.test, function(x) x[,2])) #Make a data.frame of probs
-  ADA.pred.test <- classify(Ada.pred.test)
-#  ConMat_Test<-confusionMatrix(ADA.pred.test$Class, testClass)
-#  Test_Accuracy<-as.vector(ConMat_Test$ overall)[1];
-#  Test_err<-1-Test_Accuracy;
-  Test_ari <- adjustedRandIndex(ADA.pred.test$Class,testClass)
-  print(paste0("The test accuracy is :",Test_ari))
-  results_rt <- list()
-  results_rt[["AdaModels"]]<-AdaModels
-  results_rt[["Test_Accuracy"]]<-Test_ari
-  return(results_rt)
 }

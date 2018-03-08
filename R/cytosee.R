@@ -25,7 +25,6 @@
 #'   \item{\code{outermethod}:}{\code{"list "}, clustering data info }
 #'  }
 #'
-#' @import flowCore
 #' @name cytosee
 #' @rdname cytosee
 #' @aliases cytosee-class
@@ -33,26 +32,27 @@
 
 
 cytosee <- methods::setClass("cytosee",slots =
-                      c(fcs.data = "ANY",
-                        label="ANY",
-                        transform_method="character",
-                        transformation="matrix",
-                        event.use = "numeric",
-                        channel.use = "numeric",
-                        projectname="character",
-                        paras_in="list",
-                        preprocess="character",
-                        dim.red="list",
-                        clust="list",
-                        clust_method="character",
-                        cores="numeric",
-                        outermethod="list",
-                        dmt="list",
-                        CL_label="list",
-                        ID2CL="list",
-                        ClusterID="list",
-                        autoLabel="logical",
-                        version = "ANY")
+                               c(fcs.data = "ANY",
+                                 label="ANY",
+                                 transform_method="character",
+                                 transformation="matrix",
+                                 event.use = "numeric",
+                                 channel.use = "numeric",
+                                 projectname="character",
+                                 paras_in="list",
+                                 preprocess="character",
+                                 dim.red="list",
+                                 clust="list",
+                                 clust_method="character",
+                                 cores="numeric",
+                                 outermethod="list",
+                                 dmt="list",
+                                 mst="ANY",
+                                 CL_label="list",
+                                 ID2CL="list",
+                                 ClusterID="list",
+                                 autoLabel="logical",
+                                 version = "ANY")
 )
 
 
