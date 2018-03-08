@@ -4,8 +4,8 @@
 \alias{pro_reduce_dim}
 \title{Reduce dimension of high dimension FCS data}
 \usage{
-pro_reduce_dim(data, n_core = NULL, sgd_batches = 0.5, tsne_pca = TRUE,
-  method = "ALL")
+pro_reduce_dim(data, label, sample_n = 1000, n_core = NULL,
+  sgd_batches = 0.5, tsne_pca = TRUE)
 }
 \arguments{
 \item{n_core}{how many cores you want to use}

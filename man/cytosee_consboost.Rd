@@ -4,17 +4,16 @@
 \alias{cytosee_consboost}
 \title{Consboost function which using consensus clustering method}
 \usage{
-cytosee_consboost(object, pannal.use = NULL, cell.use = NULL, maxK = 10,
-  K = 5, K_cell = 2000, reptime = 5)
+cytosee_consboost(object, K, sample_n = 3000, n_core = 3)
 }
 \arguments{
 \item{object}{the FCS exprs data set after transformed}
 
-\item{K}{Number of clusters}
+\item{K}{Number of final clusters}
 
-\item{K_cell}{The number of sampling data}
+\item{sample_n}{The number of sampling data}
 
-\item{reptime}{loop times for getting the best sample set}
+\item{n_core}{CPU thread use}
 }
 \description{
 Consboost function which using consensus clustering method

@@ -23,4 +23,5 @@ Initializes the cytosee object and some optional filtering
 iflowobj <- initiflow(fcs.data = fcsname)
 iflowobj
 
+
 }

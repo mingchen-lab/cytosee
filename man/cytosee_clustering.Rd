@@ -2,10 +2,10 @@
 % Please edit documentation in R/cytosee_clustering.R
 \name{cytosee_clustering}
 \alias{cytosee_clustering}
-\alias{cytosee_flowSOM}
+\alias{pro_center_calc}
 \title{Opens \code{cytosee} results in an interactive session in a web browser.}
 \usage{
-cytosee_flowSOM(File, K, colsToUse)
+pro_center_calc(data, label)
 }
 \arguments{
 \item{object}{an object of \code{cytosee} class}
