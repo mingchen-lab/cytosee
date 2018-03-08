@@ -4,8 +4,8 @@
 
 
 ### Workflow of CytoSEE
-![CytoSEE](http://bis.zju.edu.cn/CytoSEE/cytosee_workflow.png)
-
+![CytoSEE](http://bis.zju.edu.cn/picture/workflow_new_cytosee.png)
+ 
 ### Installation
 
 ```R
@@ -23,3 +23,4 @@ devtools::install_github("mingchen-lab/cytosee")
 library("cytosee")
 cytosee_go()
 ```
+
