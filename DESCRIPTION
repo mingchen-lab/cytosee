@@ -11,5 +11,5 @@ LazyData: true
 Depends: R (>= 3.3), Biobase, ggplot2, methods, graphics, utils
 Suggests: testthat
 LinkingTo: Rcpp
-Imports: Rcpp,doParallel,pheatmap,DT,visNetwork,recharts,reshape2,vegan,flowCore, FlowSOM, Rclusterpp, igraph, shinyjs,Rphenograph,shinydashboard,shiny
+Imports: Rcpp,doParallel,pheatmap,DT,visNetwork,recharts,reshape2,vegan,flowCore, FlowSOM, igraph, flowMeans, shinyjs, Rphenograph, shinydashboard, shiny, largeVis, ada , SamSPECTRAL
 RoxygenNote: 6.0.1
