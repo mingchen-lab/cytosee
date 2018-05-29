@@ -19,13 +19,11 @@ Slots for cytosee
   \item{\code{raw.data}:}{\code{"matrix"}, The raw exprs data from FCS file }
   \item{\code{raw.desc}:}{\code{"list"}, The raw description data from FCS file }
   \item{\code{ident}:}{\code{"factor"}, The identified cell types }
-  \item{\code{transformation}:}{\code{"matrix"}, scaled expression data }
   \item{\code{projectname}:}{\code{"character"}, The name of your project}
   \item{\code{paras_in}:}{\code{"list "}, The input parameters }
   \item{\code{dim_red}:}{\code{"list "}, Reduced dimemsion data }
   \item{\code{pro.pre}:}{\code{"list "}, The pre-processing information }
   \item{\code{pro.clust}:}{\code{"list "}, clustering data info }
-  \item{\code{pro.cores}:}{\code{"characters "}, the cores used for whole process }
   \item{\code{outermethod}:}{\code{"list "}, clustering data info }
  }
 }

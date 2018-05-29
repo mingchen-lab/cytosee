@@ -4,7 +4,7 @@
 \alias{initiflow}
 \title{Initialize and setup the iflow obj}
 \usage{
-initiflow(fcs.data, projectname = "cytoseeProject")
+initiflow(fcs.data = data.frame(), projectname = "cytoseeProject")
 }
 \arguments{
 \item{fcs.data}{Raw input data}

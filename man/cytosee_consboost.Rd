@@ -11,7 +11,7 @@ cytosee_consboost(object, K, sample_n = 3000, n_core = 3)
 
 \item{K}{Number of final clusters}
 
-\item{sample_n}{The number of sampling data}
+\item{sample_n}{sampling the data for consensus clustering}
 
 \item{n_core}{CPU thread use}
 }
