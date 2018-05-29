@@ -9,7 +9,6 @@
  */
 
 #include "densitycut.h"
-
 SEXP sexp_log_sum_exp(SEXP s_x) {
   double *x = NULL;
   size_t n  = LENGTH(s_x);
