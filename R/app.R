@@ -1,34 +1,38 @@
-#' Opens \code{CytoSEE} workflow in an interactive session in a web browser.
-#'
-#' Runs interactive \code{shiny} session of \code{CytoSEE}
-#'
-#' @param object an object of \code{cytosee} class
-#'
-#' @return Opens a browser window with an interactive \code{shiny} app and visualize
-#' all precomputed clusterings.
-#'
-#' @name cytosee_gui
-#' @aliases cytosee_gui
-#'
-#' @import shiny
-#' @import visNetwork
-#' @import pheatmap
-#' @import recharts
-#' @import hexbin
-#' @import ggplot2
-#' @importFrom shinyalert shinyalert useShinyalert
-#' @importFrom shinyjs useShinyjs showElement hideElement alert
-#' @importFrom flowCore read.FCS logTransform arcsinhTransform exprs transformList transform colnames flowFrame parameters keyword description<- description fsApply
-#' @importFrom shinydashboard dashboardPage sidebarMenu  dashboardHeader dashboardSidebar menuItem box tabBox tabItems tabItem updateTabItems
-#' @export
+library(shiny)
+library(cytosee)
+library(ggplot2)
+library(visNetwork)
+library(pheatmap)
+library(recharts)
+library(DT)
+library(shinyjs)
+library(flowCore)
+library(shinydashboard)
+library(SamSPECTRAL)
+library(largeVis)
+library(FlowSOM)
+library(plyr)
+library(reshape2)
+library(scales)
+library(ada)
+library(foreach)
+library(shinyalert)
+load("sysdata.rda")
 
-cytosee_gui <- function(object){
+source('cytosee_preprocess.R')
+source('cytosee.R')
+source('cytosee_consboost.R')
+source('cytosee_clustering.R')
+source('cytosee_PhenoCL.R')
+source('cytosee_integrated_clust_methods.R')
+source('cytosee_DR.R')
+source('cytosee_flowAI.R')
 
-##===========================shiny UI part=================================
+
 
 ui = shinydashboard::dashboardPage(
   skin ="blue",
-  shinydashboard::dashboardHeader(title = "CytoSEE"),
+  shinydashboard::dashboardHeader(title = "CytoSEE"),Zzzzzzzzzzzz
 
   ##### sider bar #####
   shinydashboard::dashboardSidebar(
@@ -2815,5 +2819,4 @@ observeEvent(input$select_QC_next,{
 
  #output$Img <- downloadHandler()
  }
-   shinyApp(ui=ui, server = server,options = list("launch.browser"=TRUE))
-}
+   shinyApp(ui=ui, server = server)

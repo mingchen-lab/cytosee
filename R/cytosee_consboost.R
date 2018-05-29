@@ -703,21 +703,22 @@ mcconsensus <- function(x,diss=FALSE,algorithms=list('agnes'),alparams=list(),cl
 #' Consboost function which using consensus clustering method
 #' @param object the FCS exprs data set after transformed
 #' @param K Number of final clusters
-#' @param sample_n The number of sampling data
+#' @param sample_n sampling the data for consensus clustering
 #' @param n_core CPU thread use
 #' @import ada
 #' @export
 
 cytosee_consboost <- function(object,K,sample_n = 3000,n_core=3){
   set.seed(443)
-  colnames(object)<-paste0("marker",1:ncol(object))
-  total_len = length(object[,1])
+  data=object@fcs.data[object@event.use,][,object@channel.use]
+  colnames(data)<-paste0("marker",1:ncol(data))
+  total_len = length(data[,1])
   if(total_len<=sample_n){
-    trainset <-object[1:total_len,]
+    trainset <-data.class()[1:total_len,]
   }
 
   else{
-    mm <- kmeans(object,100,iter.max=1000000)
+    mm <- kmeans(data,100,iter.max=1000000)
     label <- mm$cluster
     av_num = sample_n / total_len
     label_level = levels(as.factor(label))
@@ -726,16 +727,17 @@ cytosee_consboost <- function(object,K,sample_n = 3000,n_core=3){
       ll = which(label==i)
       return_list = c(return_list,sample(ll,round(length(ll)*av_num)))
     }
-    trainset <- object[base::sort(return_list),]
+    trainset <- data[base::sort(return_list),]
     message("calculating trainset")
     cons_data <- mcconsensus(as.data.frame(trainset),diss=FALSE,algorithms=list('hclust'),alparams=list(),clmin=K-1,clmax=K+1,prop=0.8,reps=100,numofcores=n_core)
     trainClass <- as.vector(paste0("X",cons_data[[2]]@rm$cm))
     message("Adaboost model")
     AdaModels <- oneVsAll(trainset, trainClass, ada)
-    ada.pred.unknown   <- predict(AdaModels, as.data.frame(object),  type='probs')
+    ada.pred.unknown   <- predict(AdaModels, as.data.frame(data),  type='probs')
     Ada.pred.unknown   <- data.frame(lapply(ada.pred.unknown, function(x) x[,2]))
     ADA.pred.unknown   <- classify(Ada.pred.unknown)
     ada.class <- as.integer(gsub("X","",ADA.pred.unknown$Class))
-    return(ada.class)
+    object@ClusterID <- as.data.frame(ada.class)
+    return(object)
   }
 }

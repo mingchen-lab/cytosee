@@ -15,13 +15,11 @@
 #'   \item{\code{raw.data}:}{\code{"matrix"}, The raw exprs data from FCS file }
 #'   \item{\code{raw.desc}:}{\code{"list"}, The raw description data from FCS file }
 #'   \item{\code{ident}:}{\code{"factor"}, The identified cell types }
-#'   \item{\code{transformation}:}{\code{"matrix"}, scaled expression data }
 #'   \item{\code{projectname}:}{\code{"character"}, The name of your project}
 #'   \item{\code{paras_in}:}{\code{"list "}, The input parameters }
 #'   \item{\code{dim_red}:}{\code{"list "}, Reduced dimemsion data }
 #'   \item{\code{pro.pre}:}{\code{"list "}, The pre-processing information }
 #'   \item{\code{pro.clust}:}{\code{"list "}, clustering data info }
-#'   \item{\code{pro.cores}:}{\code{"characters "}, the cores used for whole process }
 #'   \item{\code{outermethod}:}{\code{"list "}, clustering data info }
 #'  }
 #'
@@ -32,27 +30,26 @@
 
 
 cytosee <- methods::setClass("cytosee",slots =
-                               c(fcs.data = "ANY",
-                                 label="ANY",
-                                 transform_method="character",
-                                 transformation="matrix",
-                                 event.use = "numeric",
-                                 channel.use = "numeric",
-                                 projectname="character",
-                                 paras_in="list",
-                                 preprocess="character",
-                                 dim.red="list",
-                                 clust="list",
-                                 clust_method="character",
-                                 cores="numeric",
-                                 outermethod="list",
-                                 dmt="list",
-                                 mst="ANY",
-                                 CL_label="list",
-                                 ID2CL="list",
-                                 ClusterID="list",
-                                 autoLabel="logical",
-                                 version = "ANY")
+                      c(autoLabel="logical",
+                        channel.use = "numeric",
+                        clust="list",
+                        ClusterID="list",
+                        clust_method="character",
+                        CL_label="list",
+                        dim.red="list",
+                        dmt="list",
+                        event.use = "numeric",
+                        fcs.data = "ANY",
+                        filename = "character",
+                        ID2CL="list",
+                        label="ANY",
+                        mst="ANY",
+                        outermethod="list",
+                        preprocess="character",
+                        projectname="character",
+                        transform_method = "character",
+                        transform_paras = "character",
+                        version = "ANY")
 )
 
 

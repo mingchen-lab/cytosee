@@ -4,9 +4,12 @@
 
 
 
+#======================================================================
 
+# densityCut
 ##############util.R ##################
-#' @useDynLib cytosee sexp_log_sum_exp
+#' @useDynLib cytosee, .registration = TRUE
+
 LogSumExp = function(x) {
   # The log-sum-exp trick, x is a vector.
   # A matrix input will be converted to a vector
@@ -17,99 +20,13 @@ LogSumExp = function(x) {
     stop("Error: x should be a vector of length greater than zero!")
   }
 
-  tmp = .Call("sexp_log_sum_exp", x)
+  tmp = .Call("sexp_log_sum_exp", x,"cytosee")
 
   return(tmp)
 }
 
 
-#======================================================================
-#' Reset the default parameters for the plot function
-#'
-#' @export
-#' @param ... go to plot
-#' @param xlab A title for the x axis
-#' @param ylab A title for the y axis
-#' @param xaxt see par
-#' @param yaxt see par
-#' @param xtck.label Logical, wheter to draw the x axis tick labels
-#' @param ytck.label Logical, wheter to draw the y axis tick labels
-#' @param cex.axis cex for axis
-#'
-#' @importFrom graphics plot axis mtext
-#'
-NeatPlot = function(..., xlab, ylab, xaxt="s", yaxt="s",
-                    xtck.label=TRUE, ytck.label=TRUE, cex.axis=0.8) {
 
-  plot(xaxt="n", yaxt="n", xlab=NA, ylab=NA, ...)
-
-  if (xaxt == "s") {
-    axis(side=1, tck=-0.015, labels=NA)
-    axis(side=1, lwd=0, mgp=c(3,0.5,0), line=-0.4,
-         labels=xtck.label, cex.axis=cex.axis)
-  }
-  if (yaxt == "s") {
-    axis(side=2, tck=-0.015, labels=NA)
-    axis(side=2, lwd=0, mgp=c(3,0.5,0), line=-0.4,
-         labels=ytck.label, cex.axis=cex.axis)
-  }
-
-  if (!missing(xlab)) {
-    mtext(side=1, text=xlab, cex=cex.axis, line=1.0)
-  }
-  if (!missing(ylab)) {
-    mtext(side=2, text=ylab, cex=cex.axis, line=1.0)
-  }
-}
-
-##########get knn.R
-##====================================================================
-#' Efficient Knn-search in high-dimensional search (upto 1000 dimensions)
-#'
-#' export
-#'
-#' @param X A data matrix (columns are features and rows are data points)
-#' @param num.tree The number of trees for random projection
-#' @param K A integer to specify the number of neighbours in building the Knn graph.
-#' Default to \eqn{K=\log_2(N)}, where N is the number of data points
-#'
-#' @return A list containg knn.index, knn.dist, the dimensionality D,
-#' and the projected trees: tree.index
-#'
-
-GetKnnRandomProjection = function(X, num.tree=50, K) {
-  X = as.matrix(X)
-  D = ncol(X)
-  tree.index = new(RcppAnnoy::AnnoyEuclidean, D)
-  N = nrow(X)
-
-  for (i in seq(N)) {
-    tree.index$addItem(i-1, X[i, ])
-  }
-  tree.index$build(num.tree)
-
-  #====================
-  if (missing(K)) {
-    K  = ceiling(log2(N))
-  }
-  knn.index = matrix(0, nrow=N, ncol=K)
-  knn.dist  = knn.index
-  for (i in seq(N)) {
-    idx = tree.index$getNNsByItem(i-1, K+1)
-    idx = idx[-1]
-
-    knn.dist[i, ]  =  sapply(idx, function(z)
-      tree.index$getDistance(i-1, z))
-
-    knn.index[i, ] = idx + 1
-  }
-
-  return(list(knn.index=knn.index,
-              knn.dist =knn.dist,
-              D=D,
-              tree.index=tree.index)
-  )
-}
 
 
 
@@ -620,80 +537,12 @@ MergeCluster = function(label, V.assign,
 }
 
 
-##====================================================================
-#' The densityCut algorithm
-#'
-#' @export
-#'
-#' @param X A data matrix (columns are features and rows are data points)
-#' @param K A integer to specify the number of neighbours in building the Knn graph.
-#' Default to \eqn{K=\log_2(N)}, where N is the number of data points
-#' @param knn.index An N*K data matrix for the nearest neighbour indices
-#' @param knn.dist An N*K data matrix for the nearest neighbour distances
-#'
-#' @param threshold A number between 0 and 1 specifying the saliency index to cut the tree.
-#' If not specified, it is selecting by stability analysis of the clustering tree
-#'
-#' @param V The initial density vector of length N
-#' @param D The dimensionality of data
-#' @param G A sparse Knn graph, reseaved for extension
-#'
-#' @param alpha The damping factor between 0 and 1, default to 0.90
-#' @param nu The saliency index in merging trees, default to \eqn{seq(0.0, 1.0, by=0.05)}
-#' @param adjust Lotical, whether to ajdust valley height or not
-#'
-#' @param maxit The maximum number of iteration allowed in density refinement, default to 50
-#' @param eps The threshold in density refinement, default to 1e-5
-#'
-#' @param col A vector of clours
-#' @param show.plot Logical, whether to draw clustering results
-#' @param show.tip.label Logical, whether to draw the tip labels of trees
-#'
-#' @param debug Logical, whether to print debug information
-#' @param xlab Logical, whether to show the xlab
-#' @param text subplot label
-#' @param ... Reserved for extension
-#'
-#' @return A list contains the clustering memberships,
-#' the modes of each cluster, and the estimated densities at each point
-#'
 #' @importFrom mvtnorm rmvnorm
-#'
-#' @examples
-#' library(mvtnorm)
-#'
-#' data(distinct.col)
-#' set.seed(0)
-#'
-#' N = 2^12
-#' number.cluster = 64
-#' N = N / number.cluster
-#'
-#' i  = j = seq(-3.5, 3.5, by=1)
-#' mu = expand.grid(i, j)
-#' mu = as.matrix(mu)
-#'
-#' sigma = matrix(c(1, 0, 0, 1)*0.05, byrow=TRUE, nrow=2)
-#'
-#' x = lapply(seq(number.cluster), function(z) rmvnorm(N, mu[z,], sigma))
-#' x = do.call(rbind, x)
-#'
-#' label = lapply(1:number.cluster, function(z) rep(z, N))
-#' col = AssignLabelColor(distinct.col, unlist(label))
-#' NeatPlot(x, col=col, pch=4, cex=0.5)
-#'
-#' K = ceiling(log2(N * number.cluster))
-#' a = DensityCut(X=x, K=K, alpha=0.85, nu=seq(0.0, 1.0, by=0.05),
-#'                debug=FALSE, show.plot=TRUE,
-#'                col=distinct.col)
-#'
-#' col = AssignLabelColor(distinct.col, a$cluster)
-#' NeatPlot(x, col=col, pch=4, cex=0.5)
-#'
+
 DensityCut = function(X, K, knn.index, knn.dist, V, D, G, threshold,
                       alpha=0.90, nu=seq(0.0, 1.0, by=0.05),
                       adjust=TRUE, maxit=50, eps=1e-5,
-                      col, show.plot=TRUE, show.tip.label=FALSE,
+                      col = NULL, show.plot=FALSE, show.tip.label=FALSE,
                       debug=FALSE, xlab=TRUE, text=NULL, ...) {
   if (missing(G)) {
     if (missing(X) & (missing(knn.index) | missing(knn.dist))) {
@@ -893,111 +742,64 @@ DensityCut = function(X, K, knn.index, knn.dist, V, D, G, threshold,
 }
 
 
-#=====================================================================
-PlotDensitycut = function(label, base, show.tip.label=TRUE,
-                          tip.color, xlab=TRUE) {
-  ## For a subtree, start from the roots and traverse to the tips
-  TraverseSubTree = function(x, i, add.internal.node=FALSE,
-                             prob, prev.prob) {
-    # Current distance
-    if (missing(prob)) {
-      prob = nu.max - merge.point[i]
-    }
 
-    # Previous spliting distance
-    if (missing(prev.prob)) {
-      prev.prob = single.root
-    }
+# Rphenograph
+##=====================================================================
+#' @importFrom igraph graph.data.frame cluster_louvain modularity membership
+#' @import ggplot2
+#' @useDynLib cytosee
 
-    # Internal nodes
-    if (i < (ncol(label))) {
-      id = which(as.character(label[,i]) == x)
-      next.level.node = as.character(unique(label[id, i+1]))
-      desc = NULL
+Rphenograph <- function(data, k=30){
+  if(is.data.frame(data))
+    data <- as.matrix(data)
 
-      # No divergence - proceed to the next level
-      if (length(next.level.node) == 1) {
-        newickout = TraverseSubTree(x=next.level.node,
-                                    i=i+1,
-                                    add.internal.node,
-                                    prob=prob,
-                                    prev.prob=prev.prob)
-      } else {
-        prob = merge.point[i+1] - prev.prob
-        prev.prob = prob + prev.prob
+  if(!is.matrix(data))
+    stop("Wrong input data, should be a data frame of matrix!")
 
-        for (x.i in next.level.node) {
-          subtree = TraverseSubTree(x.i, i+1,
-                                    add.internal.node,
-                                    prev.prob=prev.prob)
-          desc = c(desc, paste(subtree, sep=""))
-        }
-
-        internal.node = NULL
-        if (add.internal.node == TRUE) internal.node = x
-
-        sub.tree  = paste(desc, collapse=",")
-        newickout = paste("(", sub.tree, "):",
-                          prob, internal.node, sep="")
-      }
-    } else {
-      newickout = x
-      newickout = paste(newickout, prob, sep=":")
-    }
+  if(k<1){
+    stop("k must be a positive integer!")
+  }else if (k > nrow(data)-2){
+    stop("k must be smaller than the total number of points!")
   }
 
-  merge.point = as.numeric(colnames(label))
-  single.root = merge.point[1]
-  nu.max = merge.point[length(merge.point)]
+  message("Run Rphenograph starts:","\n",
+          "  -Input data of ", nrow(data)," rows and ", ncol(data), " columns","\n",
+          "  -k is set to ", k)
 
-  ConvertClusterNewick = function(x, add.internal.node=FALSE) {
-    newick = NULL
+  cat("  Finding nearest neighbors...")
+  t1 <- system.time(neighborMatrix <- find_neighbors(data, k=k+1)[,-1])
+  cat("DONE ~",t1[3],"s\n", " Compute jaccard coefficient between nearest-neighbor sets...")
+  t2 <- system.time(links <- jaccard_coeff(neighborMatrix))
 
-    # For each subtree
-    level.one = as.character(unique(x[,1]))
-    for(x in level.one) {
-      subtree.x = TraverseSubTree(x, 1,
-                                  add.internal.node=FALSE,
-                                  prob=nu.max - single.root)
-      newick = c(newick, subtree.x)
-    }
-    newick = paste(newick, collapse=",")
-    newick = paste("(", newick, "):", single.root, ";", sep="")
+  cat("DONE ~",t2[3],"s\n", " Build undirected graph from the weighted links...")
+  links <- links[links[,1]>0, ]
+  relations <- as.data.frame(links)
+  colnames(relations)<- c("from","to","weight")
+  t3 <- system.time(g <- graph.data.frame(relations, directed=FALSE))
 
-    return(newick)
-  }
+  # Other community detection algorithms:
+  #    cluster_walktrap, cluster_spinglass,
+  #    cluster_leading_eigen, cluster_edge_betweenness,
+  #    cluster_fast_greedy, cluster_label_prop
+  cat("DONE ~",t3[3],"s\n", " Run louvain clustering on the graph ...")
+  t4 <- system.time(community <- cluster_louvain(g))
+  cat("DONE ~",t4[3],"s\n")
 
-  # (A:0.1,B:0.2,(C:0.3,D:0.4)E:0.5)F;
-  out  = ConvertClusterNewick(label, add.internal.node=FALSE)
-  tree = ape::read.tree(text=out)
-  tree = ape::collapse.singles(tree)
+  message("Run Rphenograph DONE, totally takes ", sum(c(t1[3],t2[3],t3[3],t4[3])), "s.")
+  cat("  Return a community class\n  -Modularity value:", modularity(community),"\n")
+  cat("  -Number of clusters:", length(unique(membership(community))))
 
-  id.col = match(tree$tip.label, unique(label[, ncol(label)]))
-  tip.color = tip.color[unique(label[, ncol(label)])][id.col]
-
-  ape::plot.phylo(tree, type="phylogram",
-                  label.offset=0.01,
-                  xaxt="n",
-                  show.tip.label=show.tip.label,
-                  tip.color=tip.color,
-                  ann=FALSE,
-                  root.edge=TRUE,
-                  no.margin=FALSE,
-                  x.lim=c(base, nu.max))
-  ape::tiplabels(bg=tip.color, pch=21, col="ivory4", cex=1)
-
-  line.space = 0.10
-  label.tick = seq(0, nu.max, by=nu.max/5)
-  axis(side=1, tck=-0.015, labels=NA, at=label.tick, line=line.space)
-  axis(side=1, lwd=0, mgp=c(3,0.5,0), line=-0.4,
-       at=label.tick, labels=label.tick, cex.axis=0.8)
-
-  if (xlab == TRUE) {
-    mtext(side=1, text="saliency index", line=1.0, cex=0.8)
-  }
+  return(list(g, community))
 }
 
-##=====================================================================
+#' @importFrom RANN nn2
+# K Nearest Neighbour Search
+find_neighbors <- function(data, k){
+  nearest <- nn2(data, data, k, searchtype = "standard")
+  return(nearest[[1]])
+}
+
+
 
 
 

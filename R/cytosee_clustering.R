@@ -1,168 +1,5 @@
-#' Opens \code{cytosee} results in an interactive session in a web browser.
-#' @param object an object of \code{cytosee} class
-#'
-#' @return Opens a browser window with an interactive \code{shiny} app and visualize
-#' all precomputed clusterings.
-#'
-#' @name cytosee_clustering
-#' @aliases cytosee_clustering
-
-
-
-##---------------------------------------------------------------------------------------------------
-# Function for calculate the center of clusters
-# pro_center_calc for building the mst
-pro_center_calc <- function(data,label) {
-  centers <- c()
-  is.na(label) <-which(label == 0)
-  for(i in c(1:max(label, na.rm=TRUE))) {
-    obs <- which(label == i)
-    if (length(obs) > 1) {
-      centers <- rbind(centers,colMeans(data[obs,,drop=FALSE]))
-      label[obs] <- nrow(centers)
-    } else {
-      is.na(label) <- obs
-    }
-
-  }
-  return(centers)
-}
-
-estkTW <- function(dataset) {
-
-  p <- ncol(dataset)
-  n <- nrow(dataset)
-
-  # compute Tracy-Widom bound
-  x <- scale(dataset)
-  muTW <- (sqrt(n - 1) + sqrt(p))^2
-  sigmaTW <- (sqrt(n - 1) + sqrt(p)) * (1/sqrt(n - 1) + 1/sqrt(p))^(1/3)
-  #  sigmaHatNaive <- tmult(x)  # x left-multiplied by its transpose
-  sigmaHatNaive <- x %*% t(x)  # x left-multiplied by its transpose
-  bd <- 3.273 * sigmaTW + muTW  # 3.2730 is the p=0.001 percentile point for the Tracy-Widom distribution
-
-  # compute eigenvalues and return the amount which falls above the bound
-  evals <- eigen(sigmaHatNaive, symmetric = TRUE, only.values = TRUE)$values
-  k <- 0
-  for (i in 1:length(evals)) {
-    if (evals[i] > bd) {
-      k <- k + 1
-    }
-  }
-  return(k)
-}
-
-pic_mad <- function(data){
-  m_mad<-apply(data,1,mad)
-  data <- data[sort(m_mad,index.return=T,decreasing = T)$ix[1:5000],]
-  return(data)
-}
-
-##---------------------------------------------------------------------------------------------------
-# Function for calculate the distance matrix
-# pro_center_calc for building the mst
-pro_calc_distance <- function(data) {
-  distMat <- list()
-  distMat[[1]]<- as.matrix(dist(data,method = "euclidean"))
-  distMat[[2]]<- as.matrix(dist(data,method = "maximum"))
-  distMat[[3]]<- as.matrix(dist(data,method = "manhattan"))
-  distMat[[4]]<- as.matrix(dist(data,method = "minkowski"))
-  return(distMat)
-}
-
-
-
-##---------------------------------------------------------------------------------------------------
-# calculate_elbow, this script comes from FlowSOM
-
-#' Generate the best label by consensus clustering
-#'
-#' We use consensus clustering method to make sure the result is reliable
-#'
-#' @param object cytosee object
-#' @param MaxC The max number to esitimate the k
-#' @param n_core how many cores you want to use
-#' @export
-
-PRO_consensus <- function(object , MaxC = MaxC , n_cores = n_cores){
-
-  if(method ==    "metaClustering_consensus"){
-    results <- consensus(data,max,...)
-    res <- rep(0,max)
-    res[1] <- SSE(data,rep(1,nrow(data)))
-    for(i in 2:max){
-      c <- results[[i]]$consensusClass
-      res[i] <- SSE(data,c)
-    }
-  } else {
-    method <- get(method)
-    res <- rep(0,max)
-    for(i in 1:max){
-      c <- method(data, k=i,...)
-      res[i] <- SSE(data,c)
-    }
-  }
-
-  for(i in 2:(max-1)){
-    res[i] <- (1-smooth)*res[i]+(smooth/2)*res[i-1]+(smooth/2)*res[i+1]
-  }
-
-  if(plot) plot(1:max, res, type="b", xlab="Number of Clusters",
-                ylab="Within groups sum of squares")
-  findElbow(res)
-}
-
-findElbow <- function(data){
-  n <- length(data)
-  data <- as.data.frame(cbind(1:n,data))
-  colnames(data) <- c("X","Y")
-
-  min_r <- Inf
-  optimal <- 1
-  for(i in 2:(n-1)){
-    f1 <- stats::lm(Y~X,data[1:(i-1),])
-    f2 <- stats::lm(Y~X,data[i:n,])
-    r <- sum(abs(c(f1$residuals,f2$residuals)))
-    if(r < min_r){
-      min_r <- r
-      optimal <-i
-    }
-  }
-  return(optimal)
-}
-
-SSE <- function(data,clustering){
-  if(class(clustering)!= "numeric")
-    clustering <- as.numeric(as.factor(clustering))
-  c_wss <- 0
-  for(j in seq_along(clustering)){
-    if(sum(clustering==j) > 1){
-      c_wss <- c_wss + (nrow(data[clustering==j,,drop=FALSE])-1)*
-        sum(apply(data[clustering==j,,drop=FALSE],2,stats::var))
-    }
-  }
-  return(c_wss)
-}
-
-
-################### temp method use flowmeans to calculate the clustering info
-
-clusteringMethod <- function(dat, MaxN=20){
-  result <- flowMeans(dat, MaxN=MaxN )
-  result <- list(result@Label, result@Labels, result@Mats)
-  return(result)
-}
-
-
-
-########### consensus with consensusPlus
-## require ada and caret
-
-# sampling cells randomly
-downsamleRD<- function(data,K_cell = 4000) {
-  sample_index <- sample(1:nrow(data),K_cell)
-}
-
+## Calculate adaboost model
+##----------------------------------------------------------------------------------
 oneVsAll <- function(X,Y,FUN,...) {
   models <- lapply(unique(Y), function(x) {
     name <- as.character(x)
@@ -192,78 +29,229 @@ classify <- function(dat) {
 }
 
 
-#' culculate the adjusted Rand Index for the return class with the gd class
-#' @param x the return class from clustering method
-#' @param y the standard label
-adjustedRandIndex <- function (x, y)
-{
-  x <- as.vector(x)
-  y <- as.vector(y)
-  if(length(x) != length(y))
-    stop("arguments must be vectors of the same length")
-  tab <- table(x,y)
-  if(all(dim(tab)==c(1,1))) return(1)
-  a <- sum(choose(tab, 2))
-  b <- sum(choose(rowSums(tab), 2)) - a
-  c <- sum(choose(colSums(tab), 2)) - a
-  d <- choose(sum(tab), 2) - a - b - c
-  ARI <- (a - (a + b) * (a + c)/(a + b + c + d)) /
-    ((a + b + a + c)/2 - (a + b) * (a + c)/(a + b + c + d))
-  return(ARI)
-}
 
-
-
-
-
-
+# densitycut flowSOM flowmeans rphenograph
+##----------------------------------------------------------------------------------
+#' @title The flowMeans algorithm
+#' @description Finds a good fit to the data using k-means clustering algorithm.
+#' Then merges the adjacent dense spherical clusters to find non-spherical clusters.
+#'
+#' @name cytosee_flowMeans
+#' @aliases cytosee_flowMeans
+#'
+#' @param object An object of \code{cytosee} class.
+#' @param varNames A character vector specifying the variables (columns) to be included in clustering.
+#'  When it is left unspecified, all the variables will be used.
+#' @param MaxN Maximum number of clusters. If set to NA (default) the value will be estimated automatically.
+#' @param NumC Number of clusters. If set to NA (default) the value will be estimated automatically.
+#' @param iter.max The maximum number of iterations allowed.
+#' @param nstart The number of random sets used for initialization.
+#' @param Mahalanobis Boolean value. If TRUE (default) mahalanobis distance will be used. Otherwised, euclidean distance will be used.
+#' @param Standardize Boolean value. If TRUE (default) the data will be transformed to the [0,1] interval.
+#' @param Update String value. If set to "Mahalanobis" the distance function will be updated at each merging iteration with recalculating mahalanobis distances.
+#'  If set to "Mean" the distance matrix will be updated after each merging step with averaging. If set to "None" the distance matrix will not be updated.
+#' @param MaxCovN Maximum number of points, used for calculating the covariance. If set to NA (default), all the points will be used.
+#' @param MaxKernN Maximum number of points, used for counting the modes using kernel density estimation. If set to NA (default), all the points will be used.
+#' @param addNoise Boolean value. Determines if uniform noise must be added to the data to prevent singularity issues or not.
+#' @param OrthagonalResiduals Boolean value, indicates if the residuals must be transformed to orthagonal distance or not.
+#'
+#'
 #' @importFrom flowMeans flowMeans
 #' @export
-cytosee_flowMeans <- function(object, NumC=8, MaxN = MaxN ){
-  clust <- flowMeans::flowMeans(object,MaxN=MaxN,NumC=NumC)
+#'
+#'
+
+cytosee_flowMeans <- function(object, varNames=NULL, MaxN = NA, NumC = NA, iter.max = 50, nstart = 10,
+                              Mahalanobis = TRUE, Standardize = TRUE, Update = "Mahalanobis", OrthagonalResiduals=TRUE,
+                              MaxCovN=NA, MaxKernN=NA, addNoise=TRUE){
+  data=object@fcs.data[object@event.use,][,object@channel.use]
+  clust <- flowMeans::flowMeans(data,MaxN=MaxN,NumC=NumC,varNames=varNames,iter.max = iter.max, nstart = nstart,
+                                Mahalanobis = Mahalanobis, Standardize = Standardize, Update = Update, OrthagonalResiduals=OrthagonalResiduals,
+                                MaxCovN=MaxCovN, MaxKernN=MaxKernN, addNoise=addNoise)
   clust <- clust@Label
-  return(clust)
+  object@ClusterID <- as.data.frame(clust)
+  return(object)
 }
 
-#' @import Rphenograph
-#' @importFrom igraph membership
+
+
+##----------------------------------------------------------------------------------
+#' @title RphenoGraph clustering
+#'
+#' @description R implementation of the PhenoGraph algorithm
+#' A simple R implementation of the [PhenoGraph](http://www.cell.com/cell/abstract/S0092-8674(15)00637-6) algorithm,
+#' which is a clustering method designed for high-dimensional single-cell data analysis. It works by creating a graph ("network") representing
+#' phenotypic similarities between cells by calclating the Jaccard coefficient between nearest-neighbor sets, and then identifying communities
+#' using the well known [Louvain method](https://sites.google.com/site/findcommunities/) in this graph.
+#'
+#' @param object an object of \code{cytosee} class.
+#' @param k integer; number of nearest neighbours (default:30).
+#'
+#' @return a list contains an igraph graph object for \code{graph_from_data_frame} and a communities object, the operations of this class contains:
+#' \item{print}{returns the communities object itself, invisibly.}
+#' \item{length}{returns an integer scalar.}
+#' \item{sizes}{returns a numeric vector.}
+#' \item{membership}{returns a numeric vector, one number for each vertex in the graph that was the input of the community detection.}
+#' \item{modularity}{returns a numeric scalar.}
+#' \item{algorithm}{returns a character scalar.}
+#' \item{crossing}{returns a logical vector.}
+#' \item{is_hierarchical}{returns a logical scalar.}
+#' \item{merges}{returns a two-column numeric matrix.}
+#' \item{cut_at}{returns a numeric vector, the membership vector of the vertices.}
+#' \item{as.dendrogram}{returns a dendrogram object.}
+#' \item{show_trace}{returns a character vector.}
+#' \item{code_len}{returns a numeric scalar for communities found with the InfoMAP method and NULL for other methods.}
+#' \item{plot}{for communities objects returns NULL, invisibly.}
+#'
+#' @references Jacob H. Levine and et.al. Data-Driven Phenotypic Dissection of AML Reveals Progenitor-like Cells that Correlate with Prognosis. Cell, 2015.
+#' @examples
+#' iris_unique <- unique(iris) # Remove duplicates
+#' data <- as.matrix(iris_unique[,1:4])
+#' Rphenograph_out <- Rphenograph(data, k = 45)
+#' modularity(Rphenograph_out[[2]])
+#' membership(Rphenograph_out[[2]])
+#' iris_unique$phenograph_cluster <- factor(membership(Rphenograph_out[[2]]))
+#' ggplot(iris_unique, aes(x=Sepal.Length, y=Sepal.Width, col=Species, shape=phenograph_cluster)) + geom_point(size = 3)+theme_bw()
+#' @import igraph
 #' @export
 cytosee_phenograph <- function(object, K = 30){
-  clust <- cytofkit::Rphenograph(object,k = K)
-  clust <- igraph::membership(clust)
-  return(clust)
+  data <- object@fcs.data[object@event.use,][,object@channel.use]
+  clust <- Rphenograph(data,k = K)
+  clust <- igraph::membership(clust[[2]])
+  object@ClusterID <- as.data.frame(as.matrix(clust))
+  return(object)
 }
 
+
+##----------------------------------------------------------------------------------
+#' @title The densityCut algorithm
+#'
+#' @description densityCut first roughly estimates the densities
+#'of data points from a K-nearest neighbour graph and then refines the densities via a random
+#'walk. A cluster consists of points falling into the basin of attraction of an estimated mode of the
+#'underlining density function. A post-processing step merges clusters and generates a hierarchical
+#'cluster tree. The number of clusters is selected from the most stable clustering in the hierarchical
+#'cluster tree. Experimental results on ten synthetic benchmark datasets and two microarray gene
+#'expression datasets demonstrate that densityCut performs better than state-of-the-art algorithms
+#'for clustering biological datasets.
+#'
+#' @name cytosee_DensityCut
+#' @aliases cytosee_DensityCut
 #' @export
-cytosee_densitycut <- function(object, NumC= 30){
-  clust <- DensityCut(object,show.plot = F,K=NumC)$cluster
-  return(clust)
+#'
+#' @param object an object of \code{cytosee} class.
+#' @param X A data matrix (columns are features and rows are data points)
+#' @param K A integer to specify the number of neighbours in building the Knn graph.
+#' Default to \eqn{K=\log_2(N)}, where N is the number of data points
+#' @param knn.index An N*K data matrix for the nearest neighbour indices
+#' @param knn.dist An N*K data matrix for the nearest neighbour distances
+#'
+#' @param threshold A number between 0 and 1 specifying the saliency index to cut the tree.
+#' If not specified, it is selecting by stability analysis of the clustering tree
+#'
+#' @param V The initial density vector of length N
+#' @param D The dimensionality of data
+#' @param G A sparse Knn graph, reseaved for extension
+#'
+#' @param    The damping factor between 0 and 1, default to 0.90
+#' @param nu The saliency index in merging trees, default to \eqn{seq(0.0, 1.0, by=0.05)}
+#' @param adjust Lotical, whether to ajdust valley height or not
+#' @param alpha The damping factor between 0 and 1, default to 0.90
+#' @param maxit The maximum number of iteration allowed in density refinement, default to 50
+#' @param eps The threshold in density refinement, default to 1e-5
+#'
+#' @param col A vector of clours
+#' @param show.plot Logical, whether to draw clustering results
+#' @param show.tip.label Logical, whether to draw the tip labels of trees
+#'
+#' @param debug Logical, whether to print debug information
+#' @param xlab Logical, whether to show the xlab
+#' @param text subplot label
+#' @param ... Reserved for extension
+cytosee_DensityCut <- function(object, K, knn.index, knn.dist, V, D, G, threshold,
+                               alpha=0.90,adjust=TRUE, maxit=50, eps=1e-5,
+                               col = NULL,debug=FALSE, xlab=TRUE, text=NULL, ...){
+  X<- object@fcs.data[object@event.use,][,object@channel.use]
+  clust <- DensityCut(X, K=K, knn.index, knn.dist, V, D, G, threshold=threshold,
+                      alpha=alpha, adjust=TRUE, maxit=maxit, eps=eps,
+                      col = NULL, show.plot=FALSE,show.tip.label=FALSE,
+                      debug=debug, xlab=xlab, text=text, ...)$cluster
+  object@ClusterID <- as.data.frame(clust)
+  return(object)
 }
 
+
+
+
+##----------------------------------------------------------------------------------
+#' @title Run the flowSOM algorithm
+#'
+#' @description
+#' Method to run general FlowSOM workflow. Will scale the data and uses consensus meta-clustering.
+#' @param object an object of \code{cytosee} class.
+#' @param K Maximum number of clusters to try out.
+#' @param nClus Exact number of clusters to use. If not NULL, max will be ignored.
+#' @param method Clustering method to use, given as a string. Options are metaClustering_consensus,metaClustering_hclust, metaClustering_kmeans,metaClustering_som
+#'
+#' @name cytosee_flowSOM
+#' @aliases cytosee_flowSOM
 #' @import FlowSOM
 #' @export
-cytosee_flowSOM=function(File,K,colsToUse){
+cytosee_flowSOM=function(object,K,nClus=NULL,method="metaClustering_consensus"){
+  File <- flowFrame(as.matrix(object@fcs.data[object@event.use,]))
   ff <- File
+  colsToUse <- cyto@channel.use
   fSOM <- ReadInput(ff,compensate = FALSE,transform = FALSE, scale = TRUE)
-  fSOM <- BuildSOM(fSOM,colsToUse = colsToUse)
-  metaClustering <- metaClustering_consensus(data=fSOM$map$codes,k=K)
-  result=matrix()
+  fSOM <- BuildSOM(fSOM,colsToUse = colsToUse,silent = TRUE)
+  metaClustering <- MetaClustering(data=fSOM$map$codes,max=K,method=method,nClus=nClus)
+  result <- matrix()
   for(i in 1:length(fSOM$map$mapping[,1])){
-    result[i]=metaClustering[fSOM$map$mapping[i,1]]
+    result[i] <- metaClustering[fSOM$map$mapping[i,1]]
   }
-  return(result)
+  object@ClusterID <- as.data.frame(result)
+  return(object)
 }
 
+
+##----------------------------------------------------------------------------------
+#' SamSPECTRAL image based funciton for fcs data clustering.
+#'
+#' SamSPECTRAL first builds the communities to sample the data points. Then, it builds a graph and after weighting
+#' the edges of the graph by conductance computation, it is passed to a classic spectral clustering algorithm to find
+#' the spectral clusters. The last stage of SamSPECTRAL is to combine the spectral clusters.
+#' The resulting "connected components" estimate biological cell populations in the data sample.
+#'
+#' @param object an object of \code{cytosee} class.
+#' @param sigmal A scaling parameter that determines the "resolution" in the spectral clustering stage.
+#'  By increasing it, more spectral clusters are identified. This can be useful when "small" population are aimed.
+#'  See the user manual for a suggestion on how to set this parameter using the eigenvalue curve.
+#' @param separation.factor This threshold controls to what extend clusters should be combined or kept separate.Normally,
+#'  an appropriate value will fall in range 0.3-2.
+#' @param number.of.clusters The default value is "NA" which leads to computing the number of spectral clusters automatically,
+#'  otherwise it can be a vector of integers each of which determines the number of spectral clusters.
+#'  The output will contain a clustering resulting from each value.
+#'
+#' @return A object of cytosee with clustering result.
+#'
+#' @name cytosee_SamSPECTRAL
+#' @aliases cytosee_SamSPECTRAL
 #' @import SamSPECTRAL
 #' @export
-cytosee_SamSPECTRAL=function(data,colsToUse,sigma,separation.factor){
-  data=as.matrix(data)
-  result=SamSPECTRAL::SamSPECTRAL(data.points=data,
-                                  dimensions = colsToUse,
+#'
+cytosee_SamSPECTRAL<-function(object,sigma,separation.factor,number.of.clusters="NA",precision=6,stabilizer=100,k.for_kmeans=NA){
+  data <- object@fcs.data[object@event.use,]
+  data <- as.matrix(data)
+  result <- SamSPECTRAL::SamSPECTRAL(
+                                  data.points=data,
+                                  dimensions = object@channel.use,
                                   normal.sigma = sigma,
-                                  separation.factor=separation.factor)
-  return(result)
+                                  separation.factor=separation.factor,
+                                  number.of.clusters=number.of.clusters,
+                                  precision=precision,
+                                  stabilizer = stabilizer,
+                                  k.for_kmeans=k.for_kmeans
+
+  )
+  object@ClusterID <- as.data.frame(result)
+  return(object)
 }
-
-
-

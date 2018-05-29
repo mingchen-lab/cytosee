@@ -1,25 +1,24 @@
 #' Automate Query phenotypes from Cell ontology
 #'
 #' This function will automatically produce Phenotypes for each clusters and query the most possible result for them.
-#' @name PhenoCL
+#' @name cytosee_PhenoCL
+#' @aliases cytosee_PhenoCL
 #' @param data A matrix contain fcs data .
 #' @param ClusterID A data.frame contain the Cluster ID of each events in data.
 #' @param MarkerName character vectors for revising all the name of markers. Default is a empty matrix.
 #' @param MaxLabelnum A numbmic vector determine how many top labels will be display. Default is 10.
 #' @return A list of all most possible results of clusters.
-#' @export PhenoCL
+#' @export
 #' @examples
 #' # load the library
 #' library(cytosee)
 #' data(GvHD001)
-#' data=GvHD001$data[,3,6]
+#' data=GvHD001$data[,c(3:6)]
 #' ClusterID=GvHD001$label
 #' MarkerName=c("CD4","CD8b","CD8","CD3")
-#' result=PhenoCL(data,ClusterID,MarkerName)
+#' result=cytosee_PhenoCL(data,ClusterID,MarkerName)
 #'
-
-
-PhenoCL<-function(data,ClusterID,MarkerName=c(),MaxLabelnum=10){
+cytosee_PhenoCL<-function(data,ClusterID,MarkerName=c(),MaxLabelnum=10){
   if(!is.null(MarkerName)){
     colnames(data)=MarkerName
   }
@@ -27,8 +26,8 @@ PhenoCL<-function(data,ClusterID,MarkerName=c(),MaxLabelnum=10){
     stop("Illegal symbol was detected such as '(' in your marker names")
   }
   data=cbind(ClusterID,data)
-  message("Run DMT...")
-  dmtr=DMT(data)
+  message("Run cytosee_DMT...")
+  dmtr=cytosee_DMT(data)
   markers=c()
   message("Data transformation...")
 
@@ -117,9 +116,9 @@ PhenoCL<-function(data,ClusterID,MarkerName=c(),MaxLabelnum=10){
   message("Querying the label......")
   CL_label=list()
   for(i in 1:length(re)){
-    result=LocCL(MarkerList = re[i],MaxHitsPht=MaxLabelnum)
+    result=cytosee_LocCL(MarkerList = re[i],MaxHitsPht=MaxLabelnum)
     ClusterID=Cluster_m2c[i]
-    CL_label[[i]]=list("ClusterID"=ClusterID,"result"=result)
+    CL_label[[i]]=list("ClusterID"=ClusterID,"result"=result,"PhenoType"=re[i])
   }
   message("Done!")
   return(CL_label)
@@ -129,23 +128,21 @@ PhenoCL<-function(data,ClusterID,MarkerName=c(),MaxLabelnum=10){
 
 
 
-#' build Divisive marker tree
+#' @title build Divisive marker tree(DMT)
 #'
 #' description
 #' This is a function for building divisive marker tree. It can be used to divide the the cell populations into their own clusters by surface markers.
 #' @param data this data should be a dataframe which contain the all elements from the expression data of .fcs file and it's first column should be the cluster num of this event.
-#' @example
-#' "to be continue!"
 #' @return DMT TREE list which is a tree list contain elements like "label,size,id,previd,clus"
-
-
-
-#get sd value
-DMT=function(data){
-  f=data
+#'
+cytosee_DMT=function(data){
+  if(!is.data.frame(data)){
+    stop("data must be a dataframe!")
+  }
+  f<-data
   cl_average_vec=data.frame()
   cl=unique(f[,1])
-  Colnames=colnames(f[,2:length(f)])
+  Colnames=colnames(f[,2:length(f[1,])])
   data=f[,Colnames]
   len_col=length(Colnames)
   for(i in c(1:length(cl))){
@@ -161,8 +158,16 @@ DMT=function(data){
   for(i in c(1:length(cl))){
     temp=data[which(f[,1]==cl[i]),]
     len_temp=length(temp[,1])
+    if(len_temp==1){
+      warning("There is a cluster whose cell number is '1',we will regrad 'sd' value as zero")
+    }
     for(j in c(1:len_col)){
-      sdVec[j]=sdVec[j]+var(temp[,j])*(len_temp-1)
+      if(len_temp==1){
+        sdVec[j]=0
+      }
+      else{
+        sdVec[j]=sdVec[j]+var(temp[,j])*(len_temp-1)
+      }
     }
   }
 
@@ -395,21 +400,21 @@ getAvg=function(fcsData,ClusterID){
 }
 
 
-#' It will query the possible result from local ontology datatable
-#' description
+#' @title It will query the possible result from local ontology datatable
+#'
+#' @description
+#'
 #' @param MarkerList a string word such as "CD19-CD3+CD49b++Sca1-".
 #' @param MaxHitsPht a numerical value, the number of max possible value.
 #' @return if plot is TRUE ,The plot list will be returned, else a list of top 5 results and their score will be returned
-#' @export LocCL
-#' @example
-#' LocCL()
-
-
-
-LocCL <- function (MarkerList, MaxHitsPht=10){
+#' @export
+#' @examples
+#'
+#' MarkerList="CD8+CD4+CCR7-"
+#' cytosee_LocCL(MarkerList)
+#'
+cytosee_LocCL <- function (MarkerList, MaxHitsPht=10){
   #surface marker divided
-
-  print(MarkerList)
   markerlist=unlist(strsplit(split = "\\++|-+",MarkerList))
   expresslist=unlist(strsplit(split = "\\w+",MarkerList))
   Markertype=list(bright="",positive="",low="",negative="")
@@ -544,7 +549,7 @@ LocCL <- function (MarkerList, MaxHitsPht=10){
   #get top label
   tabel_scorelist=cbind(all_label,Score=round(final_score,3))
   tabel_scorelist=as.data.frame(tabel_scorelist[order(tabel_scorelist[,2],decreasing = TRUE),])
-  top_label<<-head(x = tabel_scorelist,MaxHitsPht)$all_label
+  top_label=head(x = tabel_scorelist,MaxHitsPht)$all_label
   top_score=head(x = tabel_scorelist,MaxHitsPht)$Score
   label_score=top_score
 

@@ -17,7 +17,7 @@
 #'
 #'
 initiflow <- function(
-  fcs.data,
+  fcs.data=data.frame(),
   projectname = "cytoseeProject"
 ) {
   cytosee.version <- packageVersion("cytosee")
@@ -35,22 +35,15 @@ initiflow <- function(
 #' @importFrom flowCore exprs
 #' @export
 para_setting <- function(object,cores=1, channel.use = 0, transform_method ="log10"){
-  object@cores <- cores
-  object@transform_method<-transform_method
-  if(channel.use == 0){
-    channel.use <- 1:length(object@fcs.data@exprs[1,])
-  }
-  object@channel.use <- channel.use
-  return(object)
+    object@cores <- cores
+    object@transform_method<-transform_method
+    if(channel.use == 0){
+      channel.use <- 1:length(object@fcs.data@exprs[1,])
+    }
+    object@channel.use <- channel.use
+    return(object)
 
 }
-
-
-#' @importFrom flowCore exprs
-
-
-
-
 
 ############################################### flowAI function integration ##########################################################
 
@@ -220,14 +213,14 @@ flow_signal_plot <- function(flowSignalData, lowerBinThres, upperBinThres) {
   data$binID <- binID
 
   longdata <- melt(data, id.vars = "binID", variable.name = "marker", value.name = "value")
-  FS_graph <- ggplot(longdata, aes(x = binID, y = value, col = marker), environment = environment()) +
+  FS_graph <- ggplot(longdata, aes(x = binID, y = value, col = marker,height=height), environment = environment()) +
     geom_line() + facet_grid(marker ~ ., scales = "free") +
     labs(x = "Bin ID", y = "Median Intensity value") + theme_bw() +
     theme(strip.text.y = element_text(angle = 0, hjust = 1), axis.text = element_text(size = 10),
           axis.title = element_text(size = 15), legend.position = "none") +
     scale_x_continuous(breaks= pretty_breaks(n = 10)) +
     scale_y_continuous(breaks= pretty_breaks(n = 3)) +
-    geom_rect(aes(xmin = lowerBinThres, xmax = upperBinThres, ymin = -Inf, ymax = Inf), fill = "orange", linetype = 0, alpha = 0.005)
+    geom_rect(aes(xmin = lowerBinThres, xmax = upperBinThres, ymin = -Inf, ymax = Inf), fill = "yellow", linetype = 0, alpha = 0.005)
 
   return(FS_graph)
 }
