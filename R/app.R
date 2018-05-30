@@ -32,7 +32,7 @@ source('cytosee_flowAI.R')
 
 ui = shinydashboard::dashboardPage(
   skin ="blue",
-  shinydashboard::dashboardHeader(title = "CytoSEE"),Zzzzzzzzzzzz
+  shinydashboard::dashboardHeader(title = "CytoSEE"),
 
   ##### sider bar #####
   shinydashboard::dashboardSidebar(
