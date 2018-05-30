@@ -3,23 +3,56 @@
 
 ### Workflow of CytoSEE
 ![CytoSEE](http://bis.zju.edu.cn/picture/workflow_new_cytosee.png) 
+
+
+
+
+
 ### Installation
+
+## Linux Ubuntu 
+
+some package will rely on these tools:
+ 
+```Shell
+apt-get install -y wget r-base  supervisor \
+libcurl4-openssl-dev
+libssl-dev 
+libcgal-dev 
+libglu1-mesa-dev
+libglu1-mesa-dev 
+libcairo2-dev
+libxt-dev
+gdebi-core 
+pandoc
+pandoc-citeproc
+libxml2-dev 
+```
+
+```R
+install.package("devtools")
+source("http://bioconductor.org/biocLite.R")
+biocLite(c('FlowSOM','flowMeans','SamSPECTRAL'),ask=FALSE)
+devtools::install_github('madlogos/recharts')
+devtools::install_github('mingchen-lab/cytosee')
+```
+
+## Windows 
 
 
 ```R
-# you need install devtools first
 install.package("devtools")
-
-# install CytoSEE from github
-devtools::install_github("mingchen-lab/cytosee")
-
+source("http://bioconductor.org/biocLite.R")
+biocLite(c('FlowSOM','flowMeans','SamSPECTRAL'),ask=FALSE)
+devtools::install_github('madlogos/recharts')
+devtools::install_github('mingchen-lab/cytosee')
 ```
 
 ### Usage 
 ```R
 # CytoSEE start with one command in your IDE(R/Rstudio)
 library("cytosee")
-cytosee_go()
+cytosee_gui()
 ```
 
 
