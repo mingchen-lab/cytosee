@@ -31,7 +31,7 @@ ui = shinydashboard::dashboardPage(
   shinydashboard::dashboardHeader(title = "CytoSEE"),
 
   ##### sider bar #####
-  dashboardSidebar(
+  shinydashboard::dashboardSidebar(
 
     # use shinyjs and shinyalert
     useShinyjs(),
