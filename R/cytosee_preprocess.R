@@ -213,7 +213,7 @@ flow_signal_plot <- function(flowSignalData, lowerBinThres, upperBinThres) {
   data$binID <- binID
 
   longdata <- melt(data, id.vars = "binID", variable.name = "marker", value.name = "value")
-  FS_graph <- ggplot(longdata, aes(x = binID, y = value, col = marker,height=height), environment = environment()) +
+  FS_graph <- ggplot(longdata, aes(x = binID, y = value, col = marker), environment = environment()) +
     geom_line() + facet_grid(marker ~ ., scales = "free") +
     labs(x = "Bin ID", y = "Median Intensity value") + theme_bw() +
     theme(strip.text.y = element_text(angle = 0, hjust = 1), axis.text = element_text(size = 10),
