@@ -15,17 +15,11 @@
 some package will rely on these tools:
  
 ```Shell
-apt-get install -y wget r-base  supervisor \
+apt-get install -y wget r-base-core 
 libcurl4-openssl-dev
 libssl-dev 
-libcgal-dev 
+xserver-xorg-dev
 libglu1-mesa-dev
-libglu1-mesa-dev 
-libcairo2-dev
-libxt-dev
-gdebi-core 
-pandoc
-pandoc-citeproc
 libxml2-dev 
 ```
 
