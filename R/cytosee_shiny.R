@@ -28,10 +28,10 @@ cytosee_gui <- function(object){
 
 ui = shinydashboard::dashboardPage(
   skin ="blue",
-  dashboardHeader(title = "CytoSEE"),
+  shinydashboard::dashboardHeader(title = "CytoSEE"),
 
   ##### sider bar #####
-  shinydashboard::dashboardSidebar(
+  dashboardSidebar(
 
     # use shinyjs and shinyalert
     useShinyjs(),
