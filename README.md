@@ -10,18 +10,7 @@
 
 ### Installation
 
-#### Linux Ubuntu 
-
-some package will rely on these tools:
- 
-```Shell
-apt-get install -y wget r-base-core 
-libcurl4-openssl-dev
-libssl-dev 
-xserver-xorg-dev
-libglu1-mesa-dev
-libxml2-dev 
-```
+#### Linux 
 
 ```R
 install.package("devtools")
