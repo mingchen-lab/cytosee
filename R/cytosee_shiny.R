@@ -287,8 +287,8 @@ shinydashboard::dashboardBody(
                uiOutput("signalBinSlider"),
                hr(),
                div(
-                 style="overflow:auto;height=600",
-                 plotOutput("flowSignalPlot",width = "95%")
+                 style="overflow:auto;height:450px",
+                 uiOutput("flowSignalPlotUI",width = "98%")
                )
              )
            ),
@@ -893,7 +893,6 @@ server = function(input,output,session){
  # vector for saving choosen markers #
  dy_markers <- reactiveValues(data=NULL)
 
- cyto<<-initiflow()
  # vector for refreshing the graph
  # we will use refresh$dynamic+=1 and refresh$dynamic to refresh pictures.
  refresh <- reactiveValues(dynamic=1)
@@ -908,6 +907,7 @@ server = function(input,output,session){
    file$data<-read.FCS(inFile$datapath)
    cyto<<-initiflow(fcs.data = exprs(file$data),projectname = input$Project_name1)
    cyto@filename<<-inFile$name
+   cyto@version<<-packageVersion("cytosee")
    cyto@autoLabel<<-FALSE
    cyto@preprocess<<-"None"
    showElement("Step1_body",animType ="slide",anim = TRUE,time = 0.5)
@@ -1263,10 +1263,10 @@ observeEvent(input$select_QC_next,{
    hideElement(selector = ".Preprocess",animType ="fade",anim = TRUE,time = 0.3)
    showElement(selector = ".Step2",animType ="slide",anim = TRUE,time = 1)
    showElement("Step2_bar")
-   cyto@event.use<<-cellCheck()[[3]]$goodCellIDs
+   re<-checkRes()[[9]]
+   cyto@event.use<<-re
    cyto@preprocess<<-"flowAI-manual"
  })
-
 
   ## load flowset data
   set <- reactive({
@@ -1439,12 +1439,20 @@ observeEvent(input$select_QC_next,{
   })
 
   output$flowSignalPlot <- renderPlot({
-    if(is.null(set()) || is.null(cellCheck()))
+    if(is.null(set()) || is.null(cellCheck())){
       return(NULL)
+    }
     flowSignalData <- cellCheck()[[2]]
     fsp <- flow_signal_plot(flowSignalData, input$signalBinSlider[1], input$signalBinSlider[2])
-    fsp
-  },height=35*length(colnames(cyto@fcs.data)))
+    print(fsp)
+  })
+
+  output$flowSignalPlotUI <- renderUI({
+    if(is.null(set()) || is.null(cellCheck())){
+      return(NULL)
+    }
+    plotOutput("flowSignalPlot",height = 45*length(colnames(cyto@fcs.data)))
+  })
 
   output$flowMarginPlot <- renderPlot({
     if(is.null(set()) || is.null(cellCheck()))
@@ -1501,7 +1509,7 @@ observeEvent(input$select_QC_next,{
     QCfcs <- addQC(QCvector, sub_exprs, params, keyval)
 
     return(list(totalCellNum, totalBadPerc, goodfcs, badfcs,
-                flowRatePerc, flowSignalPerc, flowMarginPerc, QCfcs))
+                flowRatePerc, flowSignalPerc, flowMarginPerc, QCfcs,goodCellIDs))
   })
 
   ## summary text
