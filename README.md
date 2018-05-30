@@ -10,7 +10,7 @@
 
 ### Installation
 
-## Linux Ubuntu 
+#### Linux Ubuntu 
 
 some package will rely on these tools:
  
@@ -37,9 +37,9 @@ devtools::install_github('madlogos/recharts')
 devtools::install_github('mingchen-lab/cytosee')
 ```
 
-## Windows 
+#### Windows 
 
-
+Rtool34 or higher version is needed depended on the R version. Download address: https://www.r-project.org/
 ```R
 install.package("devtools")
 source("http://bioconductor.org/biocLite.R")
