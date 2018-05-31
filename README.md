@@ -1,4 +1,4 @@
-## CytoSEE: R based toolkit for automatic computation and evaluation of cytometry data
+## CytoSEE: R based platform for evaluating and visualizing cytometry data
 
 
 ### Workflow of CytoSEE
