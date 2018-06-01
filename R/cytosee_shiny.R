@@ -418,7 +418,7 @@ shinydashboard::dashboardBody(
                    column(
                      width=6,
                      numericInput(inputId = "DensityCut_K",label = "Knn K",min = 10,max = 1000,step = 10,value = 30),
-                     sliderInput(inputId = "DensityCut_alpha",label = "alpha",min = 10,max = 1000,step = 10,value = 30)
+                     sliderInput(inputId = "DensityCut_alpha",label = "alpha",min = 0,max = 1,step = 0.1,value = 0.90)
                    ),
                    column(
                      width=6,
