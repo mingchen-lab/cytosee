@@ -3,7 +3,7 @@
 #' Reduce dimension of high dimension FCS data
 #'
 #' We apply dimension reduction to those matrix which has more than paramenters
-#' \code{t-SNE},\code{largeVis} and \code{SOM} was used
+#' \code{t-SNE},\code{FIt-SNE} and \code{SOM} was used
 #'
 #' @param object cytosee object
 #' @param n_core how many cores you want to use
@@ -21,14 +21,14 @@ cytosee_DR <- function(data,n_core = NULL, sgd_batches = 0.5, tsne_pca=TRUE,meth
     PCA=princomp(data,cor=TRUE)
     red_dim[["PCA"]]<-PCA
 
-    if(method=="LargeVis"){
-      # run largeVis to reduce the dimensions
-      message("Run largeVis...")
-      suppressMessages(vis <-largeVis(scale(t(data)),sgd_batches=0.8))
-      red_dim[["largeVis"]]<-vis
-    }
+#    if(method=="LargeVis"){
+#      # run largeVis to reduce the dimensions
+#      message("Run largeVis...")
+#      suppressMessages(vis <-largeVis(scale(t(data)),sgd_batches=0.8))
+#      red_dim[["largeVis"]]<-vis
+#    }
 
-    else if(method=="FIt-SNE"){
+    if(method=="FIt-SNE"){
       # run FIt-SNE to reduce the dimension
       message("Run FIt-SNE...")
       suppressMessages(fitsne <- fftRtsne(as.matrix(data)))

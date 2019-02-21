@@ -351,7 +351,7 @@ shinydashboard::dashboardBody(
                    width = 6,
                    radioButtons(inputId = "pre_reduce_method",
                                 label = "Dimensionality reduction method:",
-                                choices=c("t-SNE","PCA","LargeVis","FIt-SNE"),
+                                choices=c("t-SNE","PCA","FIt-SNE"),
                                 selected="PCA",
                                 inline = TRUE),
                    selectInput(inputId = "select_clust_method",
@@ -738,7 +738,7 @@ shinydashboard::dashboardBody(
                radioButtons(
                  inputId="red_choice",
                  label = "Dimensionality reduction methods:",
-                 choices = c("t_SNE","LargeVis","PCA","FIt-SNE"),selected = "PCA",
+                 choices = c("t_SNE","PCA","FIt-SNE"),selected = "PCA",
                  inline = TRUE),
                br(),
                radioButtons(
