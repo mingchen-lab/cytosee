@@ -1005,8 +1005,8 @@ server = function(input,output,session){
    cyto@event.use<<-c(1:length(cyto@fcs.data))
    data<-cyto@fcs.data
    ggplot(data,
-          aes(x=data[input$plotx],
-              y=data[input$ploty]))+
+          aes(x=unlist(data[input$plotx]),
+              y=ublist(data[input$ploty])))+
      geom_hex(bins=input$bin_val)+
      theme_bw()+
      theme(panel.grid.major = element_blank(),
@@ -1029,7 +1029,7 @@ server = function(input,output,session){
    X=data[input$plotx]
    diff=abs(range(X)[2]-range(X)[1])
    bin=diff/200
-   ggplot(NULL,aes(x=X))+
+   ggplot(NULL,aes(x=unlist(X)))+
      geom_histogram(binwidth =bin,fill="#c7b3e5",colour="#c7b3e5")+
      ggtitle("Marker Density Map\n")+
      theme_bw()+
@@ -1047,7 +1047,7 @@ server = function(input,output,session){
    Y=data[input$ploty]
    diff=abs(range(Y)[2]-range(Y)[1])
    bin=diff/200
-   ggplot(NULL,aes(x=Y))+
+   ggplot(NULL,aes(x=unlist(Y)))+
      geom_histogram(binwidth =bin,fill="#daf9ca",colour="#daf9ca")+
      ggtitle("Marker Density Map\n")+
      theme_bw()+
