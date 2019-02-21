@@ -351,7 +351,7 @@ shinydashboard::dashboardBody(
                    width = 6,
                    radioButtons(inputId = "pre_reduce_method",
                                 label = "Dimensionality reduction method:",
-                                choices=c("t-SNE","PCA","LargeVis"),
+                                choices=c("t-SNE","PCA","LargeVis","FIt-SNE"),
                                 selected="PCA",
                                 inline = TRUE),
                    selectInput(inputId = "select_clust_method",
@@ -738,7 +738,7 @@ shinydashboard::dashboardBody(
                radioButtons(
                  inputId="red_choice",
                  label = "Dimensionality reduction methods:",
-                 choices = c("t_SNE","LargeVis","PCA"),selected = "PCA",
+                 choices = c("t_SNE","LargeVis","PCA","FIt-SNE"),selected = "PCA",
                  inline = TRUE),
                br(),
                radioButtons(
@@ -2587,6 +2587,15 @@ observeEvent(input$select_QC_next,{
     else if(input$red_choice=="LargeVis"){
       if(!is.null(cyto@dim.red$largeVis)){
         data=as.data.frame(t(cyto@dim.red$largeVis$coords))
+      }
+      else{
+        return(ggplot()+ggtitle("This method is not choosen! Please try others"))
+      }
+    }
+
+    else if(input$red_choice=="FIt-SNE"){
+      if(!is.null(cyto@dim.red$fitsne)){
+        data=as.data.frame(cyto@dim.red$fitsne)
       }
       else{
         return(ggplot()+ggtitle("This method is not choosen! Please try others"))

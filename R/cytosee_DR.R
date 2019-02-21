@@ -28,6 +28,12 @@ cytosee_DR <- function(data,n_core = NULL, sgd_batches = 0.5, tsne_pca=TRUE,meth
       red_dim[["largeVis"]]<-vis
     }
 
+    else if(method=="FIt-SNE"){
+      # run FIt-SNE to reduce the dimension
+      message("Run FIt-SNE...")
+      suppressMessages(fitsne <- fftRtsne(as.matrix(data)))
+      red_dim[["fitsne"]]<-fitsne
+    }
     else if(method=="t-SNE"){
       # run t-SNE to reduce the dimension
       message("Run t-SNE...")
