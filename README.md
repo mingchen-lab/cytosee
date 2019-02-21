@@ -39,3 +39,6 @@ cytosee_gui()
 ```
 
 
+### NEWS
+
+We have integrate [FIt-SNE](https://github.com/KlugerLab/FIt-SNE) into CytoSEE to deal with dimention reduction of large cell counts. To enable this function, FIt-SNE should be avaliable in your environment.
