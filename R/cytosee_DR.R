@@ -9,7 +9,6 @@
 #' @param n_core how many cores you want to use
 #' @param sgd_batches input parameter for largeVis (refer largeVis for details)
 #' @param tsne_pca whether use pca in tsne
-#' @import  largeVis
 #' @import  Rtsne
 #' @export
 #'
