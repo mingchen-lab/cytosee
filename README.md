@@ -9,6 +9,7 @@
 
 
 ### Installation
+Currently, A docker version is available at dockerhub [cytosee](https://hub.docker.com/r/mchenlab/cytosee), you can also edit and build your own image with [cytosee Dockerfile]()
 
 #### Linux 
 
@@ -31,6 +32,7 @@ devtools::install_github('madlogos/recharts')
 devtools::install_github('mingchen-lab/cytosee')
 ```
 
+
 ### Usage 
 ```R
 # CytoSEE start with one command in your IDE(R/Rstudio)
@@ -42,3 +44,5 @@ cytosee_gui()
 ### NEWS
 
 We have integrate [FIt-SNE](https://github.com/KlugerLab/FIt-SNE) into CytoSEE to deal with dimention reduction of large cell counts. To enable this function, FIt-SNE should be avaliable in your environment.
+
+
