@@ -1,7 +1,7 @@
 Package: cytosee
 Type: Package
 Title: automatic computation and evaluation of cytometry data
-Version: 0.3.0
+Version: 1.2.1
 Author: Ming Chen
 Maintainer: Yincong Zhou <yczhou@zju.edu.cn>
 Description: R shiny based app for processing cytometry data
@@ -11,6 +11,6 @@ LazyData: true
 Depends: R (>= 3.4)
 Suggests: knitr, testthat ,rmarkdown
 LinkingTo: Rcpp
-Imports: Rcpp,doParallel,pheatmap,DT,visNetwork,recharts,reshape2,vegan,flowCore, FlowSOM, igraph, shinyjs,shinydashboard,shiny,hexbin,shinyalert,Rtsne,SamSPECTRAL,ada,largeVis,RANN,flowMeans,changepoint
+Imports: Rcpp,doParallel,pheatmap,DT,visNetwork,recharts,reshape2,vegan,flowCore, FlowSOM, igraph, shinyjs,shinydashboard,shiny,hexbin,shinyalert,Rtsne,SamSPECTRAL,ada,RANN,flowMeans,changepoint
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
