@@ -18,5 +18,5 @@ cytosee_DR(data, n_core = NULL, sgd_batches = 0.5, tsne_pca = TRUE,
 }
 \description{
 We apply dimension reduction to those matrix which has more than paramenters
-\code{t-SNE},\code{largeVis} and \code{SOM} was used
+\code{t-SNE},\code{FIt-SNE} and \code{SOM} was used
 }
