@@ -1027,7 +1027,7 @@ server = function(input,output,session){
    data<-cyto@fcs.data
    ggplot(data,
           aes(x=unlist(data[input$plotx]),
-              y=ublist(data[input$ploty])))+
+              y=unlist(data[input$ploty])))+
      geom_hex(bins=input$bin_val)+
      theme_bw()+
      theme(panel.grid.major = element_blank(),
