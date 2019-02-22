@@ -2609,7 +2609,7 @@ observeEvent(input$select_QC_next,{
         return(ggplot()+ggtitle("This method is not choosen! Please try others"))
       }
     }
-    Expression = cyto@fcs.data[cyto@event.use,][input$Marker_exp_sca_choice]
+    Expression = unlist(cyto@fcs.data[cyto@event.use,][input$Marker_exp_sca_choice])
     Dimension1=data[,1]
     Dimension2=data[,2]
     if(input$Cluster_Marker=="Markers"){
