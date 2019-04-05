@@ -275,7 +275,7 @@ cytosee_flowAI <- function(fcsfiles, remove_from = "all", output = 1,
     set <- fcsfiles
     names <- flowCore::sampleNames(fcsfiles)
   }else if( class(fcsfiles) == "flowFrame" ){
-    fcsfiles@exprs <- fcsfiles@exprs - min(fcsfiles@exprs)
+    fcsfiles@exprs <- fcsfiles@exprs - min(fcsfiles@exprs)+1
     set <- as(fcsfiles,"flowSet")
     names <- fcsfiles@description$GUID
   }else{
